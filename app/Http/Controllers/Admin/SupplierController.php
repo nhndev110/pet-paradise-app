@@ -2,22 +2,21 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\DataTables\Admin\SuppliersDataTable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Supplier\StoreSupplierRequest;
 use App\Http\Requests\Admin\Supplier\UpdateSupplierRequest;
 use App\Models\Supplier;
+use Illuminate\Support\Facades\Storage;
 
 class SupplierController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(SuppliersDataTable $dataTable)
     {
-        $suppliers = Supplier::paginate(8);
-        return view('admin.supplier.index', compact(
-            'suppliers',
-        ));
+        return $dataTable->render('admin.supplier.index');
     }
 
     /**
@@ -33,8 +32,15 @@ class SupplierController extends Controller
      */
     public function store(StoreSupplierRequest $request)
     {
-        Supplier::create($request->validated());
-        return redirect()->route('admin.suppliers.index');
+        $data = $request->validated();
+
+        $data['status'] = $request->has('status');
+
+        Supplier::create($data);
+
+        return redirect()
+            ->route('admin.suppliers.index')
+            ->with('success', 'Nhà cung cấp đã được tạo thành công!');
     }
 
     /**
@@ -52,8 +58,15 @@ class SupplierController extends Controller
      */
     public function update(UpdateSupplierRequest $request, Supplier $supplier)
     {
-        $supplier->update($request->validated());
-        return redirect()->route('admin.suppliers.index');
+        $data = $request->validated();
+
+        $data['status'] = $request->has('status');
+
+        $supplier->update($data);
+
+        return redirect()
+            ->route('admin.suppliers.index')
+            ->with('success', 'Nhà cung cấp đã được cập nhật thành công!');
     }
 
     /**
@@ -62,6 +75,23 @@ class SupplierController extends Controller
     public function destroy(Supplier $supplier)
     {
         $supplier->delete();
-        return redirect()->route('admin.suppliers.index');
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Nhà cung cấp đã được xóa thành công!'
+        ]);
+    }
+
+    /**
+     * Toggle supplier status
+     */
+    public function toggleStatus(Supplier $supplier)
+    {
+        $supplier->status = !$supplier->status;
+        $supplier->save();
+
+        return redirect()
+            ->route('admin.suppliers.index')
+            ->with('success', 'Trạng thái nhà cung cấp đã được cập nhật thành công!');
     }
 }

@@ -17,12 +17,23 @@
         <!-- select2 -->
         <link rel="stylesheet" href="{{ asset('admin/plugins/select2/css/select2.min.css') }}">
         <link rel="stylesheet" href="{{ asset('admin/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
+        <!-- SweetAlert2 -->
+        <link rel="stylesheet" href="{{ asset('admin/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css') }}">
         <!-- Theme style -->
         <link rel="stylesheet" href="{{ asset('admin/css/adminlte.min.css') }}">
         <style>
             label.required::after {
                 content: " *";
                 color: red;
+            }
+
+            div.dataTables_wrapper div.dataTables_processing {
+                top: 150px !important;
+                font-weight: 600;
+            }
+
+            div.dataTables_filter>label>input {
+                width: 350px !important;
             }
         </style>
         @stack('styles')
@@ -67,10 +78,28 @@
         <script src="{{ asset('admin/plugins/select2/js/i18n/vi.js') }}"></script>
         <!-- inputmask -->
         <script src="{{ asset('admin/plugins/inputmask/jquery.inputmask.min.js') }}"></script>
+        <!-- bs-custom-file-input -->
+        <script src="{{ asset('admin/plugins/bs-custom-file-input/bs-custom-file-input.min.js') }}"></script>
+        <!-- SweetAlert2 -->
+        <script src="{{ asset('admin/plugins/sweetalert2/sweetalert2.min.js') }}"></script>
         <!-- AdminLTE App -->
         <script src="{{ asset('admin/js/adminlte.min.js') }}"></script>
         <script>
+            var Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+
             $(function() {
+                bsCustomFileInput.init();
+
                 $('.select2').select2({
                         width: "100%",
                         theme: "bootstrap4",

@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('phone')->unique();
             $table->string('email')->unique();
             $table->text('address');
+            $table->boolean('status')->default(1);
+            $table->string('logo')->nullable();
             $table->timestamps();
         });
     }

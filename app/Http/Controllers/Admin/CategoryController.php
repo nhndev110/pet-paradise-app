@@ -2,20 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\DataTables\Admin\CategoriesDataTable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Category\StoreCategoryRequest;
 use App\Http\Requests\Admin\Category\UpdateCategoryRequest;
 use App\Models\Category;
+use App\Services\Admin\UploadImageService;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(CategoriesDataTable $dataTable)
     {
-        $categories = Category::paginate(8);
-        return view('admin.category.index', compact(
-            'categories',
-        ));
+        return $dataTable->render('admin.category.index');
     }
 
     public function create()
@@ -28,8 +27,17 @@ class CategoryController extends Controller
 
     public function store(StoreCategoryRequest $request)
     {
-        Category::create($request->validated());
-        return redirect()->route('admin.categories.index');
+        $data = $request->validated();
+
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = UploadImageService::uploadImage($request->file('thumbnail'), 'categories');
+        }
+
+        Category::create($data);
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Thêm danh mục thành công');
     }
 
     public function edit(Category $category)
@@ -43,13 +51,33 @@ class CategoryController extends Controller
 
     public function update(UpdateCategoryRequest $request, Category $category)
     {
-        $category->update($request->validated());
-        return redirect()->route('admin.categories.index');
+        $data = $request->validated();
+
+        if ($request->hasFile('thumbnail')) {
+            if ($category->thumbnail) {
+                UploadImageService::deleteImage($category->thumbnail);
+            }
+            $data['thumbnail'] = UploadImageService::uploadImage($request->file('thumbnail'), 'categories');
+        }
+
+        $category->update($data);
+
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Cập nhật danh mục thành công');
     }
 
     public function destroy(Category $category)
     {
+        if ($category->thumbnail) {
+            UploadImageService::deleteImage($category->thumbnail);
+        }
+
         $category->delete();
-        return redirect()->route('admin.categories.index');
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Xóa danh mục thành công',
+        ]);
     }
 }

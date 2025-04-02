@@ -22,26 +22,32 @@
                     @method('PATCH')
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="name" class="required">Tên danh mục</label>
-                            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name"
-                                name="name" value="{{ old('name', $category->name) }}" placeholder="Nhập tên danh mục">
-                            @error('name')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
+                            <x-admin.input-label name="name" value="Tên danh mục" required="true" />
+                            <x-admin.input-text name="name" value="{{ $category->name }}"
+                                placeholder="Nhập tên danh mục" />
+                            <x-admin.input-error name="name" />
                         </div>
 
                         <div class="form-group">
-                            <label for="slug" class="required">Slug</label>
-                            <input type="text" class="form-control @error('slug') is-invalid @enderror" id="slug"
-                                name="slug" value="{{ old('slug', $category->slug) }}" placeholder="slug-danh-muc">
+                            <x-admin.input-label name="slug" value="Slug" required="true" />
+                            <x-admin.input-text name="slug" value="{{ $category->slug }}" placeholder="slug-danh-muc" />
                             <small class="form-text text-muted">Để trống để tự động tạo từ tên danh mục.</small>
-                            @error('slug')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
+                            <x-admin.input-error name="slug" />
+                        </div>
+
+                        <div class="form-group">
+                            <x-admin.input-label name="thumbnail" value="Hình ảnh" required />
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input @error('thumbnail') is-invalid @enderror"
+                                    id="thumbnail" name="thumbnail" accept="image/*">
+                                <label class="custom-file-label" for="thumbnail">Chọn file</label>
+                            </div>
+                            <small class="form-text text-muted">Chọn hình ảnh đại diện cho danh mục.</small>
+                            <div id="thumbnail-preview" class="mt-2">
+                                <img src="{{ asset('storage/' . $category->thumbnail) }}" class="img-thumbnail"
+                                    style="max-height: 200px;">
+                            </div>
+                            <x-admin.input-error name="thumbnail" />
                         </div>
 
                         <div class="form-group">
@@ -58,22 +64,16 @@
                                     @endif
                                 @endforeach
                             </select>
-                            @error('parent_id')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
+                            <x-admin.input-error name="parent_id" />
                         </div>
 
                         <div class="form-group">
-                            <label for="description">Mô tả</label>
-                            <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
-                                rows="4" placeholder="Nhập mô tả danh mục">{{ old('description', $category->description) }}</textarea>
-                            @error('description')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
+                            <x-admin.input-label name="description" value="Mô tả" />
+                            <x-admin.input-textarea name="description" rows="4" placeholder="Nhập mô tả danh mục">
+                                {{ $category->description }}
+                            </x-admin.input-textarea>
+                            <small class="form-text text-muted">Mô tả ngắn về danh mục.</small>
+                            <x-admin.input-error name="description" />
                         </div>
                     </div>
 
@@ -83,8 +83,8 @@
                             <span class="ml-1">Lưu</span>
                         </button>
                         <a href="{{ route('admin.categories.index') }}" class="btn btn-default">
-                            <i class="fas fa-times"></i>
-                            <span class="ml-1">Huỷ</span>
+                            <i class="fas fa-arrow-left"></i>
+                            <span class="ml-1">Quay lại</span>
                         </a>
                     </div>
                 </form>
@@ -94,59 +94,25 @@
 @endsection
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('admin/plugins/select2/css/select2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('admin/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
 @endpush
 
 @push('scripts')
-    <script src="{{ asset('admin/plugins/select2/js/select2.full.min.js') }}"></script>
-    <script src="{{ asset('admin/plugins/select2/js/i18n/vi.js') }}"></script>
-    <script src="{{ asset('admin/plugins/bs-custom-file-input/bs-custom-file-input.min.js') }}"></script>
     <script>
         $(function() {
-            $('.select2').select2({
-                    width: "100%",
-                    theme: "bootstrap4",
-                    language: "vi"
-                })
-                .on("select2:open", function(ev) {
-                    $(`[aria-controls="select2-${ev.target.id}-results"]`)[0].focus();
-                });
-
-            bsCustomFileInput.init();
-
-            $('#image').change(function() {
+            $('#thumbnail').change(function() {
                 const file = this.files[0];
                 if (file) {
-                    let reader = new FileReader();
-                    reader.onload = function(event) {
-                        $('#image-preview').html('<img src="' + event.target.result +
-                            '" class="img-thumbnail mt-2" width="200">');
-                    }
-                    reader.readAsDataURL(file);
+                    const objectUrl = URL.createObjectURL(file);
+                    $('#thumbnail-preview').show();
+                    $('#thumbnail-preview img').attr('src', objectUrl);
+                } else {
+                    $('#thumbnail-preview').hide();
                 }
             });
 
             $('#name').keyup(function() {
                 $('#slug').val(convertToSlug($(this).val()));
             });
-
-            function convertToSlug(text) {
-                // Xử lý riêng các ký tự đ/Đ trước khi chuẩn hóa
-                text = text.replace(/[đĐ]/g, 'd');
-
-                // Chuyển đổi các ký tự tiếng Việt sang không dấu
-                text = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-                // Thay thế các ký tự đặc biệt và khoảng trắng
-                text = text.toLowerCase()
-                    .replace(/[^\w\s-]/g, '') // Loại bỏ các ký tự đặc biệt
-                    .replace(/\s+/g, '-') // Thay thế khoảng trắng bằng dấu gạch ngang
-                    .replace(/-+/g, '-') // Loại bỏ nhiều dấu gạch ngang liên tiếp
-                    .trim(); // Loại bỏ khoảng trắng đầu/cuối
-
-                return text;
-            }
         });
     </script>
 @endpush

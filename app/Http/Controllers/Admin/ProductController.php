@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\DataTables\Admin\ProductsDataTable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Product\StoreProductRequest;
 use App\Http\Requests\Admin\Product\UpdateProductRequest;
@@ -10,19 +11,15 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Supplier;
 use App\Services\Admin\UploadImageService;
-use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(ProductsDataTable $dataTable)
     {
-        $products = Product::orderBy('created_at', 'desc')->get();
-        return view('admin.product.index', compact(
-            'products',
-        ));
+        return $dataTable->render('admin.product.index');
     }
 
     /**
@@ -44,29 +41,31 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        $validated = $request->validated();
+        $data = $request->validated();
 
-        if ($request->hasFile('image')) {
-            $validated['image'] = UploadImageService::uploadImage($request->file('image'), 'guest/products');
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = UploadImageService::uploadImage($request->file('thumbnail'), 'products');
         }
 
-        $validated['slug'] .= '-' . time();
+        $data['slug'] .= '-' . time();
 
-        $product = Product::create($validated);
+        $product = Product::create($data);
 
         if ($request->hasFile('gallery')) {
-            $gallery = UploadImageService::uploadMultipleImages($request->file('gallery'), 'guest/products');
-            $validated['gallery'] = json_encode($gallery);
+            $gallery = UploadImageService::uploadMultipleImages($request->file('gallery'), 'products');
+            $galleryCount = count($gallery);
 
-            foreach ($gallery as $image) {
+            for ($i = 0; $i < $galleryCount; $i++) {
                 $product->images()->create([
-                    'image_url' => $image,
-                    'display_order' => array_search($image, $gallery),
+                    'image_url' => $gallery[$i],
+                    'display_order' => $i,
                 ]);
             }
         }
 
-        return redirect()->route('admin.products.index');
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Sản phẩm đã được tạo thành công.');
     }
 
     /**
@@ -91,25 +90,28 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-        $validated = $request->validated();
+        $data = $request->validated();
 
-        $validated['featured'] = $request->has('featured');
+        $data['featured'] = $request->has('featured');
 
-        if ($validated['slug'] !== $product->slug) {
-            $validated['slug'] .= '-' . time();
+        if ($data['slug'] !== $product->slug) {
+            $data['slug'] .= '-' . time();
         }
 
-        if ($request->hasFile('image')) {
-            $validated['image'] = UploadImageService::uploadImage($request->file('image'), 'guest/products');
+        if ($request->hasFile('thumbnail')) {
+            if ($product->thumbnail) {
+                UploadImageService::deleteImage($product->thumbnail);
+            }
+
+            $data['thumbnail'] = UploadImageService::uploadImage($request->file('thumbnail'), 'products');
         } else {
-            $validated['image'] = $product->image;
+            $data['thumbnail'] = $product->thumbnail;
         }
 
         $currentGallery = $product->images()->get();
         $oldGalleryUrls = $request->old_gallery ?? [];
         foreach ($currentGallery as $image) {
             if (!in_array($image->image_url, $oldGalleryUrls)) {
-                // $image->forceDelete();
                 ProductImage::destroy($image->id);
                 UploadImageService::deleteImage($image->image_url);
             }
@@ -118,7 +120,7 @@ class ProductController extends Controller
         $maxOrder = $product->images()->max('display_order') ?? -1;
         if ($request->hasFile('gallery')) {
             $galleryFiles = $request->file('gallery');
-            $uploadedGallery = UploadImageService::uploadMultipleImages($galleryFiles, 'guest/products');
+            $uploadedGallery = UploadImageService::uploadMultipleImages($galleryFiles, 'products');
 
             // Thêm các ảnh mới vào với display_order tăng dần
             foreach ($uploadedGallery as $imageUrl) {
@@ -130,9 +132,11 @@ class ProductController extends Controller
             }
         }
 
-        $product->update($validated);
+        $product->update($data);
 
-        return redirect()->route('admin.products.index');
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Sản phẩm đã được cập nhật thành công.');
     }
 
     /**
@@ -140,7 +144,20 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        $product->images()->each(function ($image) {
+            UploadImageService::deleteImage($image->image_url);
+            $image->delete();
+        });
+
+        if ($product->thumbnail) {
+            UploadImageService::deleteImage($product->thumbnail);
+        }
+
         $product->delete();
-        return redirect()->route('admin.products.index');
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Sản phẩm đã được xóa thành công.'
+        ]);
     }
 }

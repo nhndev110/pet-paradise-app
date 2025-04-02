@@ -1,7 +1,7 @@
 @props(['name'])
 
 @error($name)
-    <span class="invalid-feedback" role="alert">
+    <span class="invalid-feedback d-block" role="alert">
         <strong>{{ $message }}</strong>
     </span>
 @enderror

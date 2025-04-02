@@ -24,15 +24,15 @@
                             <div class="col-md-8">
                                 <div class="form-group">
                                     <x-admin.input-label name="name" value="Tên sản phẩm" required />
-                                    <x-admin.input-text name="name" placeholder="Nhập tên sản phẩm"
-                                        value="{{ $product->name }}" autocomplete="off" />
+                                    <x-admin.input-text name="name" placeholder="Nhập tên sản phẩm" :value="$product->name"
+                                        autocomplete="off" />
                                     <x-admin.input-error name="name" />
                                 </div>
 
                                 <div class="form-group">
-                                    <x-admin.input-label name="slug" value="Slug" />
+                                    <x-admin.input-label name="slug" value="Slug" required />
                                     <x-admin.input-text name="slug" placeholder="Nhập slug hoặc để tự động tạo"
-                                        value="{{ $product->slug }}" id="slug" />
+                                        :value="$product->slug" />
                                     <x-admin.input-error name="slug" />
                                 </div>
 
@@ -72,15 +72,14 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-8">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <x-admin.input-label name="price" value="Giá bán" required />
                                             <div class="input-group">
                                                 <x-admin.input-text name="price" placeholder="Nhập giá bán"
-                                                    class="number-separator text-left" min="0"
-                                                    value="{{ $product->price }}" />
+                                                    class="number-separator text-left" min="0" :value="$product->price" />
                                                 <div class="input-group-append">
-                                                    <span class="input-group-text">VNĐ</span>
+                                                    <span class="input-group-text">đ</span>
                                                 </div>
                                             </div>
                                             <x-admin.input-error name="price" />
@@ -88,10 +87,18 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <x-admin.input-label name="quantity" value="Số lượng" required />
-                                            <x-admin.input-text name="quantity" placeholder="Số lượng"
-                                                value="{{ $product->quantity }}" type="number" min="0" />
-                                            <x-admin.input-error name="quantity" />
+                                            <x-admin.input-label name="sku" value="SKU" required />
+                                            <x-admin.input-text name="sku" placeholder="Nhập giá bán"
+                                                :value="$product->sku" />
+                                            <x-admin.input-error name="sku" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <x-admin.input-label name="stock" value="Số lượng" required />
+                                            <x-admin.input-text name="stock" placeholder="Số lượng" :value="$product->stock"
+                                                type="number" min="0" />
+                                            <x-admin.input-error name="stock" />
                                         </div>
                                     </div>
                                 </div>
@@ -99,28 +106,26 @@
                                 <div class="form-group">
                                     <x-admin.input-label name="description" value="Chi tiết sản phẩm" />
                                     <x-admin.input-textarea name="description" class="editor"
-                                        placeholder="Nhập chi tiết sản phẩm">
-                                        {{ $product->description }}
-                                    </x-admin.input-textarea>
+                                        placeholder="Nhập chi tiết sản phẩm">{{ $product->description }}</x-admin.input-textarea>
                                     <x-admin.input-error name="description" />
                                 </div>
                             </div>
 
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <x-admin.input-label name="image" value="Hình ảnh chính" />
+                                    <x-admin.input-label name="thumbnail" value="Hình ảnh chính" required />
                                     <div class="input-group">
                                         <div class="custom-file">
                                             <input type="file"
-                                                class="custom-file-input @error('image') is-invalid @enderror"
-                                                id="image" name="image" accept="image/*">
-                                            <label class="custom-file-label" for="image">Chọn ảnh</label>
+                                                class="custom-file-input @error('thumbnail') is-invalid @enderror"
+                                                id="thumbnail" name="thumbnail" accept="image/*">
+                                            <label class="custom-file-label" for="thumbnail">Chọn ảnh</label>
                                         </div>
                                     </div>
-                                    <x-admin.input-error name="image" />
-                                    <div class="mt-2" id="image-preview-container">
-                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
-                                            class="img-thumbnail" style="max-height: 200px;">
+                                    <x-admin.input-error name="thumbnail" />
+                                    <div class="mt-2" id="thumbnail-preview-container">
+                                        <img src="{{ asset('storage/' . $product->thumbnail) }}"
+                                            alt="{{ $product->name }}" class="img-thumbnail" style="max-height: 200px;">
                                     </div>
                                 </div>
 
@@ -139,10 +144,12 @@
                                         <div class="row" id="gallery-preview">
                                             @if ($gallery)
                                                 @foreach ($gallery as $image)
-                                                    <div class="col-md-4 old-gallery mb-2">
+                                                    <div class="col-md-4 old-gallery mb-2 gallery-item"
+                                                        data-id="old-{{ $loop->index }}">
                                                         <div class="position-relative">
                                                             <a href="{{ asset('storage/' . $image->image_url) }}"
-                                                                data-toggle="lightbox">
+                                                                data-toggle="lightbox" data-gallery="mixedgallery"
+                                                                data-height="500" data-width="500">
                                                                 <img src="{{ asset('storage/' . $image->image_url) }}"
                                                                     class="img-thumbnail" style="height: 100px;">
                                                             </a>
@@ -184,7 +191,7 @@
                                         <input type="checkbox" class="custom-control-input" id="featured"
                                             name="featured" value="1"
                                             {{ old('featured', $product->featured) ? 'checked' : '' }}>
-                                        <label class="custom-control-label" for="featured">
+                                        <label class="custom-control-label" for="featured" style="font-weight: 500">
                                             Hiển thị sản phẩm nổi bật
                                         </label>
                                     </div>
@@ -199,8 +206,8 @@
                             <span class="ml-1">Lưu</span>
                         </button>
                         <a href="{{ route('admin.products.index') }}" class="btn btn-default">
-                            <i class="fas fa-times"></i>
-                            <span class="ml-1">Huỷ</span>
+                            <i class="fas fa-arrow-left"></i>
+                            <span class="ml-1">Quay lại</span>
                         </a>
                     </div>
                 </form>
@@ -211,12 +218,13 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('admin/plugins/summernote/summernote-bs4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/plugins/ekko-lightbox/ekko-lightbox.css') }}">
 @endpush
 
 @push('scripts')
-    <script src="{{ asset('admin/plugins/bs-custom-file-input/bs-custom-file-input.min.js') }}"></script>
     <script src="{{ asset('admin/plugins/summernote/summernote-bs4.min.js') }}"></script>
     <script src="{{ asset('admin/plugins/ekko-lightbox/ekko-lightbox.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
     <script>
         let gallery = new DataTransfer();
 
@@ -227,8 +235,6 @@
                     alwaysShowClose: true
                 });
             });
-
-            bsCustomFileInput.init();
 
             $('.editor').summernote({
                 height: 300,
@@ -271,11 +277,11 @@
 
                     reader.onload = function(e) {
                         $('#gallery-preview').append(`
-                            <div class="col-md-4 mb-2">
+                            <div class="col-md-4 mb-2 gallery-item" data-id="${Date.now() + i}">
                                 <div class="position-relative">
-                                    <a href="${e.target.result}" data-toggle="lightbox" onclick="this.preventDefault(); this.ekkoLightbox({ alwaysShowClose: true });">
+                                    <a href="${e.target.result}" data-toggle="lightbox" data-gallery="mixedgallery">
                                         <img src="${e.target.result}" class="img-thumbnail" style="height: 100px;">
-                                    <a/>
+                                    </a>
                                     <button type="button"
                                         class="btn btn-sm btn-danger position-absolute"
                                         style="top: -6px; right: -6px;"
@@ -285,6 +291,9 @@
                                 </div>
                             </div>
                         `);
+
+                        // Reinitialize sortable after adding new items
+                        initSortable();
                     }
 
                     reader.readAsDataURL(file);
@@ -292,6 +301,9 @@
 
                 document.getElementById('gallery').files = gallery.files;
             });
+
+            // Initialize sortable
+            initSortable();
         });
 
         function removeImage(element) {
@@ -309,8 +321,57 @@
             }
 
             $(element).closest('.col-md-4').remove();
+        }
 
-            console.log("Gallery:", gallery.files);
+        function initSortable() {
+            const galleryEl = document.getElementById('gallery-preview');
+            if (!galleryEl.sortableInstance) {
+                galleryEl.sortableInstance = Sortable.create(galleryEl, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    onEnd: function(evt) {
+                        // When sorting ends, we need to update the gallery files order
+                        updateGalleryOrder();
+                    }
+                });
+            }
+        }
+
+        function updateGalleryOrder() {
+            // For existing files (old gallery), we don't need to change anything
+            // For new files, we need to reorder the gallery DataTransfer object
+
+            // If there are no new files, exit early
+            if (gallery.files.length === 0) return;
+
+            const newGallery = new DataTransfer();
+            const newItems = document.querySelectorAll('#gallery-preview .gallery-item:not(.old-gallery)');
+
+            // Create a temp array to hold file data and positions
+            const filesArray = [];
+
+            // Loop through existing gallery files and save them to array
+            for (let i = 0; i < gallery.files.length; i++) {
+                filesArray.push({
+                    file: gallery.files[i],
+                    originalIndex: i
+                });
+            }
+
+            // Loop through the DOM elements to get new order
+            newItems.forEach((item, index) => {
+                const originalIndex = Array.from(document.querySelectorAll(
+                    '#gallery-preview .gallery-item:not(.old-gallery)')).indexOf(item);
+                if (originalIndex >= 0 && originalIndex < filesArray.length) {
+                    newGallery.items.add(filesArray[originalIndex].file);
+                }
+            });
+
+            // Replace the old gallery with the new one
+            gallery = newGallery;
+            document.getElementById('gallery').files = gallery.files;
         }
     </script>
 @endpush

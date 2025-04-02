@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('customer_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('address_id')->constrained()->restrictOnDelete();
             $table->decimal('total_amount', 10, 2);
             $table->enum('status', ['pending', 'processing', 'shipped', 'delivered', 'canceled'])
@@ -21,6 +21,7 @@ return new class extends Migration
             $table->enum('payment_method', ['credit_card', 'paypal', 'bank_transfer', 'cash_on_delivery']);
             $table->enum('payment_status', ['pending', 'completed', 'failed', 'refunded'])
                 ->default('pending');
+            $table->boolean('is_guest');
             $table->timestamps();
         });
     }

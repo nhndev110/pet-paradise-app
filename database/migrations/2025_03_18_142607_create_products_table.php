@@ -12,13 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
-            $table->id('id');
+            $table->id();
             $table->string('name', 100);
             $table->string('slug')->unique();
-            $table->string('image');
-            $table->text('description')->nullable();
+            $table->string('thumbnail');
+            $table->text('description');
             $table->decimal('price', 10, 2);
-            $table->unsignedInteger('quantity');
+            $table->string('sku')->unique();
+            $table->unsignedInteger('stock')->default(0);
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained()->nullOnDelete();
             $table->boolean('status')->default(true);

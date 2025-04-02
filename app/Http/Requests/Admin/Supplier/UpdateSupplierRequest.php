@@ -25,7 +25,9 @@ class UpdateSupplierRequest extends FormRequest
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20|unique:suppliers,phone,' . $this->supplier->id,
             'email' => 'required|email|unique:suppliers,email,' . $this->supplier->id,
-            'address' => 'required|string|max:255'
+            'address' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'status' => 'boolean',
         ];
     }
 
@@ -49,7 +51,10 @@ class UpdateSupplierRequest extends FormRequest
             'email.unique' => 'Email phải là duy nhất',
             'address.required' => 'Địa chỉ là bắt buộc',
             'address.string' => 'Địa chỉ phải là chuỗi',
-            'address.max' => 'Địa chỉ không được vượt quá 255 ký tự'
+            'address.max' => 'Địa chỉ không được vượt quá 255 ký tự',
+            'description.string' => 'Mô tả phải là chuỗi',
+            'description.max' => 'Mô tả không được vượt quá 1000 ký tự',
+            'status.boolean' => 'Trạng thái phải là true hoặc false',
         ];
     }
 }

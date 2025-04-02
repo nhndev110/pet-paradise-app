@@ -1,68 +1,71 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Thêm mới nhà cung cấp')
+@section('title', 'Tạo nhà cung cấp mới')
 
 @section('content')
     <div class="row">
-        <div class="col-12">
+        <div class="col-md-12">
             <div class="card">
-                <form action="{{ route('admin.suppliers.store') }}" method="POST">
+                <div class="card-header">
+                    <h3 class="card-title">Thông tin nhà cung cấp</h3>
+                    <div class="card-tools">
+                        <a href="{{ route('admin.suppliers.index') }}" class="btn btn-tool bg-secondary">
+                            <i class="fas fa-list"></i>
+                            <span class="ml-1">Danh sách nhà cung cấp</span>
+                        </a>
+                    </div>
+                </div>
+                <form action="{{ route('admin.suppliers.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="card-body">
                         <div class="form-group">
-                            <label class="required" for="name">Tên nhà cung cấp</label>
-                            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name"
-                                name="name" value="{{ old('name') }}" placeholder="Nhập tên nhà cung cấp">
-                            @error('name')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
+                            <x-admin.input-label name="name" value="Tên nhà cung cấp" required />
+                            <x-admin.input-text name="name" placeholder="Nhập tên nhà cung cấp" />
+                            <x-admin.input-error name="name" />
                         </div>
 
                         <div class="form-group">
-                            <label for="email" class="required">Email</label>
-                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
-                                name="email" value="{{ old('email') }}" placeholder="Nhập email">
-                            @error('email')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
+                            <x-admin.input-label name="email" value="Email" required />
+                            <x-admin.input-text type="email" name="email" placeholder="Nhập email" />
+                            <x-admin.input-error name="email" />
                         </div>
 
                         <div class="form-group">
-                            <label for="phone" class="required">Số điện thoại</label>
-                            <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone"
-                                name="phone" value="{{ old('phone') }}" placeholder="Nhập số điện thoại">
-                            @error('phone')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
+                            <x-admin.input-label name="phone" value="Số điện thoại" required />
+                            <x-admin.input-text name="phone" placeholder="Nhập số điện thoại" />
+                            <x-admin.input-error name="phone" />
                         </div>
 
                         <div class="form-group">
-                            <label for="address" class="required">Địa chỉ</label>
-                            <textarea class="form-control @error('address') is-invalid @enderror" id="address" name="address" rows="3"
-                                placeholder="Nhập địa chỉ nhà cung cấp">{{ old('address') }}</textarea>
-                            @error('address')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
+                            <x-admin.input-label name="address" value="Địa chỉ" required />
+                            <x-admin.input-text name="address" placeholder="Nhập địa chỉ" />
+                            <x-admin.input-error name="address" />
                         </div>
 
                         <div class="form-group">
-                            <label for="description">Mô tả</label>
-                            <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
-                                rows="4" placeholder="Nhập thông tin mô tả về nhà cung cấp">{{ old('description') }}</textarea>
-                            @error('description')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
+                            <x-admin.input-label name="description" value="Mô tả" />
+                            <x-admin.input-textarea name="description" rows="3"
+                                placeholder="Nhập mô tả"></x-admin.input-textarea>
+                            <x-admin.input-error name="description" />
+                        </div>
+
+                        <div class="form-group">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="status" name="status"
+                                    value="1" {{ old('status', 1) ? 'checked' : '' }}>
+                                <label class="custom-control-label" for="status">Hoạt động</label>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="card-footer">
+                    <div class="card-footer text-right">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i>
                             <span class="ml-1">Lưu</span>
                         </button>
                         <a href="{{ route('admin.suppliers.index') }}" class="btn btn-default">
-                            <i class="fas fa-times"></i>
-                            <span class="ml-1">Huỷ</span>
+                            <i class="fas fa-arrow-left"></i>
+                            <span class="ml-1">Quay lại</span>
                         </a>
                     </div>
                 </form>
@@ -74,7 +77,17 @@
 @push('scripts')
     <script>
         $(function() {
-            // Add client-side validation if needed
+            // Thumbnail preview
+            $('#logo').change(function() {
+                const file = this.files[0];
+                if (file) {
+                    const objectUrl = URL.createObjectURL(file);
+                    $('#logo-preview').show();
+                    $('#logo-preview img').attr('src', objectUrl);
+                } else {
+                    $('#logo-preview').hide();
+                }
+            });
         });
     </script>
 @endpush
