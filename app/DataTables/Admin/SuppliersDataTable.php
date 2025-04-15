@@ -52,12 +52,19 @@ class SuppliersDataTable extends DataTable
      */
     public function query(Supplier $model): QueryBuilder
     {
-        $searchValue = $this->request->input('search.value');
-        if (!empty($searchValue)) {
-            return $model->where('name', 'LIKE', "%{$searchValue}%")
-                ->orWhere('email', 'LIKE', "%{$searchValue}%")
-                ->orWhere('phone', 'LIKE', "%{$searchValue}%")
-                ->orWhere('address', 'LIKE', "%{$searchValue}%");
+        $name = $this->request->name;
+        if (!empty($name)) {
+            $model = $model->where('name', 'LIKE', "%{$name}%");
+        }
+
+        $email = $this->request->email;
+        if (!empty($email)) {
+            $model = $model->where('email', 'LIKE', "%{$email}%");
+        }
+
+        $phone = $this->request->phone;
+        if (!empty($phone)) {
+            $model = $model->where('phone', 'LIKE', "%{$phone}%");
         }
 
         return $model->newQuery();
@@ -76,9 +83,8 @@ class SuppliersDataTable extends DataTable
             ->language([
                 'url' => asset('admin/plugins/datatables/vn.json'),
             ])
-            ->buttons($this->getDataTableButtons())
             ->parameters([
-                'dom' => '<"row"<"col-md-6"B><"col-md-6"f>>rt<"row"<"col-md-6"i><"col-md-6"p>>',
+                'dom' => 'rt<"row"<"col-md-6"i><"col-md-6"p>>',
                 'pageLength' => 10,
                 'processing' => true,
                 'serverSide' => true,
@@ -86,36 +92,6 @@ class SuppliersDataTable extends DataTable
                 'order' => [],
                 'responsive' => true,
             ]);
-    }
-
-    public function getDataTableButtons()
-    {
-        return [
-            Button::raw([
-                'text' => '<i class="fas fa-plus mr-1"></i> Tạo mới',
-                'action' => 'function (e, dt, node, config) {
-                        window.location.href = "' . route('admin.suppliers.create') . '";
-                    }',
-            ])->addClass('btn-sm'),
-            Button::make('pdf')
-                ->addClass('btn-sm')
-                ->text('<i class="fas fa-file-pdf mr-1"></i> PDF')
-                ->exportOptions([
-                    'columns' => [0, 1, 2, 3],
-                ]),
-            Button::make('excel')
-                ->addClass('btn-sm')
-                ->text('<i class="fas fa-file-excel mr-1"></i> Excel')
-                ->exportOptions([
-                    'columns' => [0, 1, 2, 3],
-                ]),
-            Button::raw([
-                'text' => '<i class="fas fa-sync-alt mr-1"></i> Làm mới',
-                'action' => 'function (e, dt, node, config) {
-                        dt.ajax.reload(null, false);
-                    }'
-            ])->addClass('btn-sm'),
-        ];
     }
 
     /**
@@ -147,12 +123,12 @@ class SuppliersDataTable extends DataTable
                 ->width(80)
                 ->addClass('text-center align-middle'),
             Column::computed('actions')
-                ->title('Thao tác')
+                ->title('')
                 ->searchable(false)
                 ->orderable(false)
                 ->exportable(false)
                 ->printable(false)
-                ->width(80)
+                ->width(40)
                 ->addClass('text-center align-middle'),
         ];
     }

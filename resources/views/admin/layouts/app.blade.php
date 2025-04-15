@@ -19,6 +19,9 @@
         <link rel="stylesheet" href="{{ asset('admin/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
         <!-- SweetAlert2 -->
         <link rel="stylesheet" href="{{ asset('admin/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css') }}">
+        <!-- Tempusdominus Bootstrap 4 -->
+        <link rel="stylesheet"
+            href="{{ asset('admin/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css') }}">
         <!-- Theme style -->
         <link rel="stylesheet" href="{{ asset('admin/css/adminlte.min.css') }}">
         <style>
@@ -28,12 +31,16 @@
             }
 
             div.dataTables_wrapper div.dataTables_processing {
-                top: 150px !important;
+                top: 0px !important;
                 font-weight: 600;
             }
 
             div.dataTables_filter>label>input {
                 width: 350px !important;
+            }
+
+            .cursor-pointer {
+                cursor: pointer;
             }
         </style>
         @stack('styles')
@@ -47,21 +54,7 @@
             @include('admin.layouts.partials.sidebar')
 
             <div class="content-wrapper">
-                <section class="content-header">
-                    <div class="container-fluid">
-                        <div class="row mb-2">
-                            <div class="col-sm-6">
-                                <h1>@yield('title')</h1>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="content">
-                    <div class="container-fluid">
-                        @yield('content')
-                    </div>
-                </section>
+                @yield('content')
             </div>
 
             @include('admin.layouts.partials.footer')
@@ -73,13 +66,16 @@
         <script src="{{ asset('admin/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
         <!-- overlayScrollbars -->
         <script src="{{ asset('admin/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js') }}"></script>
-        <!-- select2 -->
+        <!-- Select2 -->
         <script src="{{ asset('admin/plugins/select2/js/select2.full.min.js') }}"></script>
         <script src="{{ asset('admin/plugins/select2/js/i18n/vi.js') }}"></script>
-        <!-- inputmask -->
+        <!-- InputMask -->
+        <script src="{{ asset('admin/plugins/moment/moment.min.js') }}"></script>
         <script src="{{ asset('admin/plugins/inputmask/jquery.inputmask.min.js') }}"></script>
         <!-- bs-custom-file-input -->
         <script src="{{ asset('admin/plugins/bs-custom-file-input/bs-custom-file-input.min.js') }}"></script>
+        <!-- Tempusdominus Bootstrap 4 -->
+        <script src="{{ asset('admin/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js') }}"></script>
         <!-- SweetAlert2 -->
         <script src="{{ asset('admin/plugins/sweetalert2/sweetalert2.min.js') }}"></script>
         <!-- AdminLTE App -->
@@ -109,17 +105,20 @@
                         $(`[aria-controls="select2-${ev.target.id}-results"]`)[0].focus();
                     });
 
-                $('.datemask').inputmask('dd/mm/yyyy', {
-                    'placeholder': '__/__/____'
-                });
                 $('.number-separator').inputmask({
                     alias: "numeric",
+                    allowMinus: true,
                     groupSeparator: ",", // Dấu phẩy phân cách phần nghìn
                     autoGroup: true, // Tự động thêm dấu phân cách
                     digits: 0, // Không có chữ số thập phân
-                    removeMaskOnSubmit: true // Loại bỏ ký tự phân cách phần nghìn khi submit form
+                    removeMaskOnSubmit: true, // Loại bỏ ký tự phân cách phần nghìn khi submit form
                 });
                 $('[data-mask]').inputmask();
+
+                // Tempusdominus Bootstrap 4
+                $('.date').datetimepicker({
+                    format: 'L'
+                });
             });
 
             function convertToSlug(text) {

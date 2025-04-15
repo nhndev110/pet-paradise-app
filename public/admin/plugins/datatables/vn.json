@@ -7,9 +7,9 @@
     "sInfoFiltered": "(được lọc từ _MAX_ mục)",
     "sSearch": "<i class='fas fa-search'></i>",
     "oPaginate": {
-        "sFirst": "Đầu",
-        "sPrevious": "Trước",
-        "sNext": "Tiếp",
-        "sLast": "Cuối"
+        "sFirst": "<i class='fas fa-angle-double-left'></i>",
+        "sPrevious": "<i class='fas fa-angle-left'></i>",
+        "sNext": "<i class='fas fa-angle-right'></i>",
+        "sLast": "<i class='fas fa-angle-double-right'></i>"
     }
 }

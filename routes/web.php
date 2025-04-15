@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\PositionController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductImageController;
 use App\Http\Controllers\Admin\SupplierController;
@@ -26,13 +29,18 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', CheckRole::class . ':admin'])->prefix('admin')->name('admin.')
+Route::middleware(['auth', CheckRole::class . ':admin'])
+    ->prefix('admin')
+    ->name('admin.')
     ->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::resource('products', ProductController::class)->except('show');
         Route::resource('products.images', ProductImageController::class)->except('index', 'show');
         Route::resource('categories', CategoryController::class)->except('show');
         Route::resource('suppliers', SupplierController::class)->except('show');
+        Route::resource('employees', EmployeeController::class);
+        Route::resource('customers', CustomerController::class);
+        Route::resource('positions', PositionController::class)->except('show');
     });
 
 require __DIR__ . '/auth.php';

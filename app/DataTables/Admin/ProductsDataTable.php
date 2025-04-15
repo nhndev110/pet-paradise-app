@@ -62,14 +62,38 @@ class ProductsDataTable extends DataTable
      */
     public function query(Product $model): QueryBuilder
     {
-        $searchValue = $this->request->input('search.value');
-        if (!empty($searchValue)) {
-            return $model->where('name', 'LIKE', "%{$searchValue}%")
-                ->orWhere('sku', 'LIKE', "%{$searchValue}%")
-                ->orWhereHas('category', function ($query) use ($searchValue) {
-                    $query->where('name', 'LIKE', "%{$searchValue}%");
-                })
-                ->orderBy('created_at', 'desc');
+        $name = $this->request->name;
+        if (!empty($name)) {
+            $model = $model->where('name', 'LIKE', "%{$name}%");
+        }
+
+        $categoryId = $this->request->category_id;
+        if (!empty($categoryId)) {
+            $model = $model->whereHas('category', function ($query) use ($categoryId) {
+                $query->where('id', $categoryId);
+            });
+        }
+
+        $supplierId = $this->request->supplier_id;
+        if (!empty($supplierId)) {
+            $model = $model->whereHas('supplier', function ($query) use ($supplierId) {
+                $query->where('id', $supplierId);
+            });
+        }
+
+        $minPrice = $this->request->min_price;
+        if (!empty($minPrice)) {
+            $model = $model->where('price', '>=', $minPrice);
+        }
+
+        $maxPrice = $this->request->max_price;
+        if (!empty($maxPrice)) {
+            $model = $model->where('price', '<=', $maxPrice);
+        }
+
+        $status = $this->request->status;
+        if (!empty($status)) {
+            $model = $model->where('status', $status);
         }
 
         return $model->orderBy('created_at', 'desc')->newQuery();
@@ -87,48 +111,27 @@ class ProductsDataTable extends DataTable
             ->selectStyleSingle()
             ->language([
                 'url' => asset('admin/plugins/datatables/vn.json'),
-                'searchPlaceholder' => 'Tìm kiếm theo tên, mã SKU hoặc danh mục...',
             ])
             ->buttons(
                 Button::raw([
-                    'text' => '<i class="fas fa-plus mr-1"></i> Tạo mới',
-                    'action' => 'function (e, dt, node, config) {
-                        window.location.href = "' . route('admin.products.create') . '";
-                    }',
-                ])->addClass('btn-sm'),
-                Button::make('pdf')
-                    ->addClass('btn-sm')
-                    ->text('<i class="fas fa-file-pdf mr-1"></i> PDF')
-                    ->exportOptions([
-                        'columns' => [0, 1, 2, 3, 4],
-                    ]),
-                Button::make('excel')
-                    ->addClass('btn-sm')
-                    ->text('<i class="fas fa-file-excel mr-1"></i> Excel')
-                    ->exportOptions([
-                        'columns' => [0, 1, 2, 3, 4],
-                    ]),
-                Button::raw([
-                    'text' => '<i class="fas fa-sync-alt mr-1"></i> Làm mới',
+                    'text' => '<i class="fas fa-sync-alt mr-1"></i>',
                     'action' => 'function (e, dt, node, config) {
                         dt.ajax.reload(null, false);
+
+                        $("html, body").animate({
+                            scrollTop: $("#products-table").offset().top - 100
+                        }, 200);
                     }'
-                ])->addClass('btn-sm'),
+                ]),
             )
             ->parameters([
-                'dom' => '<"row"<"col-md-6"B><"col-md-6"f>>rt<"row"<"col-md-6"i><"col-md-6"p>>',
+                'dom' => 'rt<"row"<"col-md-6"i><"col-md-6"p>>',
                 'pageLength' => 10,
                 'processing' => true,
                 'serverSide' => true,
                 'ordering' => true,
                 'order' => [],
                 'responsive' => true,
-                'processing' => '
-                    <div class="d-flex align-items-center">
-                        <strong>Đang xử lý........</strong>
-                        <div class="spinner-border ml-2" role="status" aria-hidden="true"></div>
-                    </div>
-                ',
             ]);
     }
 
@@ -159,11 +162,11 @@ class ProductsDataTable extends DataTable
                 ->width(60)
                 ->addClass('align-middle text-center'),
             Column::computed('actions')
-                ->title('Thao tác')
+                ->title('')
                 ->orderable(false)
                 ->exportable(false)
                 ->printable(false)
-                ->width(80)
+                ->width(40)
                 ->addClass('text-center align-middle'),
         ];
     }

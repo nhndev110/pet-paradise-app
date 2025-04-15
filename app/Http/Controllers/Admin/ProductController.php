@@ -19,7 +19,13 @@ class ProductController extends Controller
      */
     public function index(ProductsDataTable $dataTable)
     {
-        return $dataTable->render('admin.product.index');
+        $categories = Category::all();
+        $suppliers = Supplier::all();
+
+        return $dataTable->render('admin.product.index', compact(
+            'categories',
+            'suppliers',
+        ));
     }
 
     /**
@@ -75,10 +81,12 @@ class ProductController extends Controller
     {
         $categories = Category::all();
         $suppliers = Supplier::all();
+        $allProducts = Product::all();
         $gallery = $product->images()->orderBy('display_order', 'asc')->get();
 
         return view('admin.product.edit', compact(
             'product',
+            'allProducts',
             'categories',
             'suppliers',
             'gallery',

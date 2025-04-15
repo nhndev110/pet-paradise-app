@@ -21,30 +21,10 @@ class CategoriesDataTable extends DataTable
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
-        return (new EloquentDataTable($query))
-            ->addColumn('name', '{{$name}}')
-            ->addColumn('slug', '{{$slug}}')
-            ->addColumn('thumbnail', function (Category $category) {
-                return '<img src="' . asset('storage/' . $category->thumbnail) . '" alt="' . $category->name . '" width="100px" height="100px">';
-            })
-            ->addColumn('parentName', function (Category $category) {
-                return $category->parent ? $category->parent->name : 'Không có';
-            })
-            ->addColumn('actions', function ($category) {
-                return view('admin.category.partials.actions', compact('category'));
-            })
-            ->orderColumn('name', function ($query, $order) {
-                $query->orderBy('name', $order);
-            })
-            ->orderColumn('slug', function ($query, $order) {
-                $query->orderBy('slug', $order);
-            })
-            ->orderColumn('parentName', function ($query, $order) {
-                $query->leftJoin('categories as parent', 'categories.parent_id', '=', 'parent.id')
-                    ->orderBy('parent.name', $order)
-                    ->select('categories.*');
-            })
-            ->rawColumns(['actions', 'thumbnail']);
+        return (new EloquentDataTable($query->with('children')))
+            ->addColumn('name', function ($category) {
+                return view('admin.category.partials.name', compact('category'));
+            });
     }
 
     /**
@@ -54,13 +34,12 @@ class CategoriesDataTable extends DataTable
      */
     public function query(Category $model): QueryBuilder
     {
-        $searchValue = $this->request->input('search.value');
-        if (!empty($searchValue)) {
-            return $model->where('name', 'LIKE', "%{$searchValue}%")
-                ->orWhere('slug', 'LIKE', "%{$searchValue}%");
+        $name = $this->request->name;
+        if (!empty($name)) {
+            $model = $model->where('name', 'LIKE', "%{$name}%");
         }
 
-        return $model->newQuery();
+        return $model->whereNull('parent_id')->newQuery();
     }
 
     /**
@@ -76,34 +55,8 @@ class CategoriesDataTable extends DataTable
             ->language([
                 'url' => asset('admin/plugins/datatables/vn.json'),
             ])
-            ->buttons(
-                Button::raw([
-                    'text' => '<i class="fas fa-plus mr-1"></i> Tạo mới',
-                    'action' => 'function (e, dt, node, config) {
-                        window.location.href = "' . route('admin.categories.create') . '";
-                    }',
-                ])->addClass('btn-sm'),
-                Button::make('pdf')
-                    ->addClass('btn-sm')
-                    ->text('<i class="fas fa-file-pdf mr-1"></i> PDF')
-                    ->exportOptions([
-                        'columns' => [0, 1, 2, 3],
-                    ]),
-                Button::make('excel')
-                    ->addClass('btn-sm')
-                    ->text('<i class="fas fa-file-excel mr-1"></i> Excel')
-                    ->exportOptions([
-                        'columns' => [0, 1, 2, 3],
-                    ]),
-                Button::raw([
-                    'text' => '<i class="fas fa-sync-alt mr-1"></i> Làm mới',
-                    'action' => 'function (e, dt, node, config) {
-                        dt.ajax.reload(null, false);
-                    }'
-                ])->addClass('btn-sm'),
-            )
             ->parameters([
-                'dom' => '<"row"<"col-md-6"B><"col-md-6"f>>rt<"row"<"col-md-6"i><"col-md-6"p>>',
+                'dom' => 'rt<"row"<"col-md-6"i><"col-md-6"p>>',
                 'pageLength' => 10,
                 'processing' => true,
                 'serverSide' => true,
@@ -120,31 +73,8 @@ class CategoriesDataTable extends DataTable
     {
         return [
             Column::make('name')
-                ->searchable(true)
-                ->orderable(true)
                 ->title('Tên danh mục')
                 ->addClass('align-middle'),
-            Column::make('slug')
-                ->searchable(true)
-                ->orderable(true)
-                ->title('Slug')
-                ->addClass('align-middle'),
-            Column::make('thumbnail')
-                ->orderable(false)
-                ->searchable(false)
-                ->title('Hình ảnh')
-                ->addClass('text-center align-middle'),
-            Column::make('parentName')
-                ->title('Danh mục cha')
-                ->addClass('align-middle'),
-            Column::computed('actions')
-                ->title('Thao tác')
-                ->searchable(false)
-                ->orderable(false)
-                ->exportable(false)
-                ->printable(false)
-                ->width(80)
-                ->addClass('text-center align-middle'),
         ];
     }
 

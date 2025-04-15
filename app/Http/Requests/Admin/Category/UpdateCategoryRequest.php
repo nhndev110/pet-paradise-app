@@ -23,7 +23,9 @@ class UpdateCategoryRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255|unique:categories,name,' . $this->category->id,
-            'slug' => 'required',
+            'slug' => 'nullable|string|max:255|unique:categories,slug,' . $this->category->id,
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:categories,id',
         ];
     }
@@ -41,6 +43,13 @@ class UpdateCategoryRequest extends FormRequest
             'name.max' => 'Tên không được vượt quá 255 ký tự',
             'name.unique' => 'Tên phải là duy nhất',
             'slug.required' => 'Slug là bắt buộc',
+            'slug.string' => 'Slug phải là một chuỗi',
+            'slug.max' => 'Slug không được vượt quá 255 ký tự',
+            'thumbnail.image' => 'Hình ảnh không hợp lệ',
+            'thumbnail.mimes' => 'Hình ảnh phải có định dạng jpeg, png, jpg, gif',
+            'thumbnail.max' => 'Kích thước hình ảnh không được vượt quá 2MB',
+            'description.string' => 'Mô tả phải là một chuỗi',
+            'parent_id.exists' => 'Danh mục cha không tồn tại',
         ];
     }
 }

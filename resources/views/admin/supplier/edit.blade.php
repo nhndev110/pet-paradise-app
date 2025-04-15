@@ -3,79 +3,122 @@
 @section('title', 'Chỉnh sửa nhà cung cấp')
 
 @section('content')
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Thông tin nhà cung cấp</h3>
-                    <div class="card-tools">
-                        <a href="{{ route('admin.suppliers.index') }}" class="btn btn-tool bg-secondary">
-                            <i class="fas fa-list"></i>
-                            <span class="ml-1">Danh sách nhà cung cấp</span>
+    <form action="{{ route('admin.suppliers.update', $supplier->id) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        @method('PATCH')
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <a class="text-secondary" href="{{ route('admin.suppliers.index') }}" style="font-size: 26px;">
+                            <i class="fas fa-arrow-circle-left"></i>
                         </a>
+                        <h1 class="d-inline ml-2">Chỉnh sửa nhà cung cấp</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="float-sm-right">
+                            <button type="submit" class="btn btn-primary rounded-pill mr-1">
+                                <i class="fas fa-save"></i>
+                                <span class="ml-1">Lưu lại</span>
+                            </button>
+                            <button type="submit" name="save-continue" class="btn btn-primary rounded-pill mr-1">
+                                <i class="fas fa-save"></i>
+                                <span class="ml-1">Lưu và sửa tiếp</span>
+                            </button>
+                            <button type="button" class="btn btn-danger rounded-pill" data-toggle="modal"
+                                data-target="#deleteSupplierModal">
+                                <i class="fas fa-trash"></i>
+                                <span class="ml-1">Xóa</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <form action="{{ route('admin.suppliers.update', $supplier->id) }}" method="POST"
-                    enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
-                    <div class="card-body">
-                        <div class="form-group">
-                            <x-admin.input-label name="name" value="Tên nhà cung cấp" required />
-                            <x-admin.input-text name="name" placeholder="Nhập tên nhà cung cấp" :value="$supplier->name" />
-                            <x-admin.input-error name="name" />
-                        </div>
+            </div>
+        </section>
 
-                        <div class="form-group">
-                            <x-admin.input-label name="email" value="Email" required />
-                            <x-admin.input-text type="email" name="email" placeholder="Nhập email" :value="$supplier->email" />
-                            <x-admin.input-error name="email" />
-                        </div>
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <x-admin.alert-message />
 
-                        <div class="form-group">
-                            <x-admin.input-label name="phone" value="Số điện thoại" required />
-                            <x-admin.input-text name="phone" placeholder="Nhập số điện thoại" :value="$supplier->phone" />
-                            <x-admin.input-error name="phone" />
-                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Thông tin nhà cung cấp: {{ $supplier->name }}</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <x-admin.input-label name="name" required>Tên nhà cung cấp</x-admin.input-label>
+                                    <x-admin.input-text name="name" value="{{ $supplier->name }}"
+                                        placeholder="Nhập tên nhà cung cấp" />
+                                    <x-admin.input-error name="name" />
+                                </div>
 
-                        <div class="form-group">
-                            <x-admin.input-label name="address" value="Địa chỉ" required />
-                            <x-admin.input-text name="address" placeholder="Nhập địa chỉ" :value="$supplier->address" />
-                            <x-admin.input-error name="address" />
-                        </div>
+                                <div class="form-group">
+                                    <x-admin.input-label name="email" required>Email</x-admin.input-label>
+                                    <x-admin.input-text name="email" value="{{ $supplier->email }}"
+                                        placeholder="example@gmail.com" />
+                                    <x-admin.input-error name="email" />
+                                </div>
 
-                        <div class="form-group">
-                            <x-admin.input-label name="description" value="Mô tả" />
-                            <x-admin.input-textarea name="description" rows="3" placeholder="Nhập mô tả">
-                                {{ $supplier->description }}
-                            </x-admin.input-textarea>
-                            <x-admin.input-error name="description" />
-                        </div>
+                                <div class="form-group">
+                                    <x-admin.input-label name="phone" required>Số điện thoại</x-admin.input-label>
+                                    <x-admin.input-text name="phone" value="{{ $supplier->phone }}"
+                                        placeholder="0123456789" />
+                                    <x-admin.input-error name="phone" />
+                                </div>
 
-                        <div class="form-group">
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="status" name="status"
-                                    value="1" {{ old('status', $supplier->status) ? 'checked' : '' }}>
-                                <label class="custom-control-label" for="status">Hoạt động</label>
+                                <div class="form-group">
+                                    <x-admin.input-label name="address" required>Địa chỉ</x-admin.input-label>
+                                    <x-admin.input-text name="address" value="{{ $supplier->address }}"
+                                        placeholder="Nhập địa chỉ" />
+                                    <x-admin.input-error name="address" />
+                                </div>
+
+                                <div class="form-group">
+                                    <x-admin.input-label name="description">Mô tả</x-admin.input-label>
+                                    <x-admin.input-textarea name="description" rows="4"
+                                        placeholder="Nhập mô tả nhà cung cấp">{{ $supplier->description }}</x-admin.input-textarea>
+                                    <small class="form-text text-muted">Mô tả ngắn về nhà cung cấp (không bắt buộc).</small>
+                                    <x-admin.input-error name="description" />
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </section>
+    </form>
 
-                    <div class="card-footer text-right">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i>
-                            <span class="ml-1">Lưu</span>
-                        </button>
-                        <a href="{{ route('admin.suppliers.index') }}" class="btn btn-default">
-                            <i class="fas fa-arrow-left"></i>
-                            <span class="ml-1">Quay lại</span>
-                        </a>
-                    </div>
-                </form>
+    <div class="modal fade" id="deleteSupplierModal" tabindex="-1" role="dialog"
+        aria-labelledby="deleteSupplierModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteSupplierModalLabel">Xác nhận xoá nhà cung cấp</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Bạn có chắc chắn muốn xoá nhà cung cấp "{{ $supplier->name }}" không?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Huỷ</button>
+                    <form action="{{ route('admin.suppliers.destroy', $supplier->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Xoá nhà cung cấp</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 @endsection
+
+@push('styles')
+    <!-- Preserve existing styles -->
+@endpush
 
 @push('scripts')
     <script>

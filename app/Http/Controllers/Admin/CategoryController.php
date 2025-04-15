@@ -9,6 +9,7 @@ use App\Http\Requests\Admin\Category\UpdateCategoryRequest;
 use App\Models\Category;
 use App\Services\Admin\UploadImageService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
@@ -19,9 +20,10 @@ class CategoryController extends Controller
 
     public function create()
     {
-        $categories = Category::all();
+        $categoryTree = Category::tree();
+
         return view('admin.category.create', compact(
-            'categories',
+            'categoryTree',
         ));
     }
 
@@ -29,11 +31,23 @@ class CategoryController extends Controller
     {
         $data = $request->validated();
 
+        $data['name'] = Str::title($request->name);
+
+        if (empty($request->slug)) {
+            $data['slug'] = Str::slug($request->name);
+        }
+
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = UploadImageService::uploadImage($request->file('thumbnail'), 'categories');
         }
 
-        Category::create($data);
+        $category = Category::create($data);
+
+        if ($request->has('save-continue')) {
+            return redirect()
+                ->route('admin.categories.edit', $category->id)
+                ->with('success', 'Thêm danh mục thành công');
+        }
 
         return redirect()
             ->route('admin.categories.index')
@@ -43,6 +57,7 @@ class CategoryController extends Controller
     public function edit(Category $category)
     {
         $categories = Category::all();
+
         return view('admin.category.edit', compact(
             'category',
             'categories',
@@ -53,14 +68,26 @@ class CategoryController extends Controller
     {
         $data = $request->validated();
 
+        $data['name'] = Str::title($request->name);
+
+        if (empty($request->slug)) {
+            $data['slug'] = Str::slug($request->name);
+        }
+
         if ($request->hasFile('thumbnail')) {
-            if ($category->thumbnail) {
+            if (!empty($category->thumbnail)) {
                 UploadImageService::deleteImage($category->thumbnail);
             }
             $data['thumbnail'] = UploadImageService::uploadImage($request->file('thumbnail'), 'categories');
         }
 
         $category->update($data);
+
+        if ($request->has('save-continue')) {
+            return redirect()
+                ->route('admin.categories.edit', $category->id)
+                ->with('success', 'Cập nhật danh mục thành công');
+        }
 
         return redirect()
             ->route('admin.categories.index')

@@ -17,8 +17,9 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('thumbnail');
             $table->text('description');
-            $table->decimal('price', 10, 2);
-            $table->string('sku')->unique();
+            $table->decimal('sell_price', 10, 2);
+            $table->decimal('cost_price', 10, 2);
+            $table->string('sku')->unique()->nullable();
             $table->unsignedInteger('stock')->default(0);
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained()->nullOnDelete();

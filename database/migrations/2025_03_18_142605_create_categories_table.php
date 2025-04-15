@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50);
-            $table->string('thumbnail');
+            $table->string('thumbnail')->nullable();
             $table->text('description')->nullable();
             $table->string('slug')->unique();
             $table->foreignId('parent_id')->nullable()->constrained('categories', 'id')->nullOnDelete();

@@ -1,5 +1,5 @@
-@props(['name', 'value'])
+@props(['name' => '', 'class' => ''])
 
-<label for="{{ $name }}" class="{{ $attributes->has('required') ? 'required' : '' }}">
-    {{ $value ?? $slot }}
+<label for="{{ $name }}" class="{{ $class }} {{ $attributes->has('required') ? 'required' : '' }}">
+    {{ $slot }}
 </label>
